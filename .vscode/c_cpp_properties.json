@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/classes",
+                "C:/mingw_dev_lib/raylib/**",
+                "C:/mingw_dev_lib/discord/include/**",
+                "C:/mingw_dev_lib/discord/lib/**",
+                "C:/mingw_dev_lib/discord/bin/**",
+                "${workspaceFolder}"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.22000.0",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-msvc-x64"
+        }
+    ],
+    "version": 4
+}
