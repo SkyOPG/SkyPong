@@ -14,6 +14,7 @@ Image logo = LoadImage("./resources/icon.png");
 
 // keybinds
 KeyboardKey Up, Down, P2Up, P2Down, Quit;
+int textx = 200, texty = 200, textsize = 40;
 
 Ball ball;
 MenuBall mball;
@@ -22,9 +23,9 @@ Paddle player;
 Player2Paddle p2;
 CpuPaddle cpu;
 MenuPaddle player2;
-secondMenuPaddle player3;
+MenuPaddle player3;
 
-int main()
+int main(void)
 {
     cout << "Starting the game" << endl;
     const int screen_width = 1280;
@@ -107,6 +108,38 @@ while (!WindowShouldClose()){
                 }
             } break;
             case GAME: {
+                if(IsKeyDown(KEY_UP)) {
+                    texty += 1;
+                }
+                if(IsKeyDown(KEY_DOWN)) {
+                    texty -= 1;
+                }
+                if(IsKeyDown(KEY_LEFT)) {
+                    textx -= 1;
+                }
+                if(IsKeyDown(KEY_RIGHT)) {
+                    textx += 1;
+                }
+                if(IsMouseButtonPressed(1)) {
+            if(341 <= GetMouseX()){
+                if(GetMouseX() <= 585){
+                    if(273 <= GetMouseY()){
+                        if(GetMouseY() <= 618) {
+                windowState = GAMEVSPLAYER;
+            }
+                }
+            } else if(740 <= GetMouseX()){
+                 if(GetMouseX() <= 985){
+                     if(273 <= GetMouseY()){
+                         if(GetMouseY() <= 618){
+                            windowState = GAMEVSCPU;
+                            } 
+                        } 
+                    } 
+                }
+        }
+            } break;
+            case GAMEVSCPU: {
                 if(IsKeyPressed(KEY_F11)) {
                     ToggleFullscreen();
                 }
@@ -126,7 +159,20 @@ while (!WindowShouldClose()){
                     windowState = TITLE;
                 }
             } break;
+            case GAMEVSPLAYER: {
+                if(IsKeyPressed(KEY_F11)) {
+                    ToggleFullscreen();
+                }
+                if(IsKeyPressed(KEY_F2)) {
+                    int time = GetTime();
+                    TakeScreenshot("screenshot.png" );
+                }
+                if (IsKeyPressed(KEY_ESCAPE)) {
+                    windowState = PAUSE;
+                }
+            } break;
             default: break;
+        }
         }
 
         BeginDrawing();
@@ -160,6 +206,16 @@ while (!WindowShouldClose()){
 
             } break;
             case GAME: {
+        ClearBackground(Dark_Green);
+        DrawRectangle(screen_width / 2, 0, screen_width / 2, screen_height, Green);
+        DrawCircle(screen_width / 2, screen_height / 2, 150, Light_Green);
+        DrawLine(screen_width / 2, 0, screen_width / 2, screen_height, WHITE);
+        DrawRectangle(340, 300, 250, 350, BLACK);
+        DrawRectangle(740, 300, 250, 350, BLACK);
+        DrawText("VS PC", 797, 454, 40, RAYWHITE);
+        DrawText("VS Friend", 358, 453, 40, RAYWHITE);
+            } break;
+            case GAMEVSCPU: {
 
         // Updating
         ball.Update();
@@ -194,6 +250,31 @@ while (!WindowShouldClose()){
         ball.Draw();
         cpu.Draw();
         player.Draw();
+            } break;
+            case GAMEVSPLAYER: {
+        ball.Update();
+        player.Update();
+        p2.Update();
+
+        if (CheckCollisionCircleRec(Vector2{ball.x, ball.y}, ball.radius, Rectangle{player.x, player.y, player.width, player.height}))
+        {
+            ball.speed_x *= -1;
+        }
+
+        if (CheckCollisionCircleRec(Vector2{ball.x, ball.y}, ball.radius, Rectangle{p2.x, p2.y, p2.width, p2.height}))
+        {
+            ball.speed_x *= -1;
+        }
+
+        ClearBackground(Dark_Green);
+        DrawRectangle(screen_width / 2, 0, screen_width / 2, screen_height, Green);
+        DrawCircle(screen_width / 2, screen_height / 2, 150, Light_Green);
+        DrawLine(screen_width / 2, 0, screen_width / 2, screen_height, WHITE);
+        ball.Draw();
+        player.Draw();
+        p2.Draw();
+        DrawText(TextFormat("%i", cpu_score), screen_width / 4 - 20, 20, 80, WHITE);
+        DrawText(TextFormat("%i", player_score), 3 * screen_width / 4 - 20, 20, 80, WHITE);
             } break;
             default: break;
         }
