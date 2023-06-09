@@ -1,0 +1,2 @@
+cpu_usage = 1
+gamecode = 42

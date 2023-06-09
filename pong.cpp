@@ -6,6 +6,9 @@
 // namespace std for less code
 using namespace std;
 
+const int screen_width = 1280;
+const int screen_height = 800;
+
 // screening system
 typedef enum GameScreen { TITLE, GAMEVSCPU, GAME, GAMEVSPLAYER, PAUSE, SETTINGS, SECRET } GameScreen;
 
@@ -13,8 +16,19 @@ typedef enum GameScreen { TITLE, GAMEVSCPU, GAME, GAMEVSPLAYER, PAUSE, SETTINGS,
 Image logo = LoadImage("./resources/icon.png");
 
 // keybinds
+
+Color skyblue = Color{ 135, 206, 235, 255 };
+
 KeyboardKey Up, Down, P2Up, P2Down, Quit;
+const int buttonSize = 100;
+const int buttonSpacing = 40;
+const int titleFontSize = 60;
+const float rotationSpeed = 2.0f;
+const int toggleSize = 20;
 int textx = 200, texty = 200, textsize = 40;
+Rectangle settingsButton = { screen_width / 2 - buttonSize / 2, screen_height / 2 + buttonSpacing, buttonSize, buttonSize };
+Rectangle playButton = { screen_width / 2 - buttonSize - buttonSpacing / 2 - 100, screen_height / 2 + buttonSpacing, buttonSize, buttonSize };
+Rectangle editorButton = { screen_width / 2 + buttonSpacing / 2 + 100, screen_height / 2 + buttonSpacing, buttonSize, buttonSize };
 
 Ball ball;
 MenuBall mball;
@@ -22,30 +36,35 @@ Text text;
 Paddle player;
 Player2Paddle p2;
 CpuPaddle cpu;
-MenuPaddle player2;
-MenuPaddle player3;
+CpuPaddle player2;
+CpuPaddle player3;
 
 int main(void)
 {
     cout << "Starting the game" << endl;
-    const int screen_width = 1280;
-    const int screen_height = 800;
-    InitWindow(screen_width, screen_height, "Pong: Sky Edition");
+    
+    InitWindow(screen_width, screen_height, "SkyPong");
     InitAudioDevice();
-    SetExitKey(KEY_HOME);
+    SetExitKey(KEY_NULL);
     SetWindowIcon(logo);
     SetTargetFPS(60);
+
+bool playButtonPressed = false;
+bool settingsButtonPressed = false;
+bool editorButtonPressed = false;
 
 ball.radius = 20;
 ball.x = screen_width/2;
 ball.y = screen_height/2;
 ball.speed_x = 7;
 ball.speed_y = 7;
+
 mball.radius = 20;
 mball.x = screen_width/2;
 mball.y = screen_height/2;
 mball.speed_x = 7;
 mball.speed_y = 7;
+
 text.size = 60;
 text.size2 = 40;
 text.speed_x = 7;
@@ -56,6 +75,7 @@ player.height = 120;
 player.x = screen_width-player.width-10;
 player.y = screen_height/2-player.height/2;
 player.speed = 6;
+
 p2.height = 120;
 p2.width = 25;
 p2.x = 10;
@@ -82,29 +102,45 @@ cpu.speed = 6;
 
 GameScreen windowState = TITLE;
 
+float rotationAngle = 0.0f;
+
+Vector2 titlePosition = { screen_width / 2 - MeasureText("SkyPong", titleFontSize) / 2, screen_height / 4 };
+
 Sound sound = LoadSound("song.mp3");
 
 PlaySound(sound);
+
+Color buttonColor = Fade(skyblue, 0.5f);
+
+bool toggle1 = false;
+bool toggle2 = false;
+bool toggle3 = false;
+char textInput[256] = "";
 
 while (!WindowShouldClose()){
         if(!IsSoundPlaying(sound)){
             PlaySound(sound);
         }
+        Vector2 mousePosition = GetMousePosition();
+
+        playButtonPressed = CheckCollisionPointRec(mousePosition, playButton) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON);
+        settingsButtonPressed = CheckCollisionPointRec(mousePosition, settingsButton) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON);
+        editorButtonPressed = CheckCollisionPointRec(mousePosition, editorButton) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON);
 
         switch(windowState){
             case TITLE: {
-                if (IsKeyPressed(KEY_SPACE))
-                {
+                if (playButtonPressed)
                     windowState = GAME;
-                }
+                else if (settingsButtonPressed)
+                    windowState = SETTINGS;
+                else if (editorButtonPressed)
+                    CloseWindow();
                 if(IsKeyPressed(KEY_F11)) {
                     ToggleFullscreen();
                 }
                 if(IsKeyPressed(KEY_F2)) {
-                    TakeScreenshot(TextFormat("screenshot.png"));
-                }
-                if(IsKeyPressed(KEY_Q)) {
-                    return 0;
+                    double time = GetTime();
+                    TakeScreenshot(TextFormat("screenshot.png-%d",time));
                 }
             } break;
             case GAME: {
@@ -120,7 +156,7 @@ while (!WindowShouldClose()){
                 if(IsKeyDown(KEY_RIGHT)) {
                     textx += 1;
                 }
-                if(IsMouseButtonPressed(1)) {
+                if(IsMouseButtonPressed(0)) {
             if(341 <= GetMouseX()){
                 if(GetMouseX() <= 585){
                     if(273 <= GetMouseY()){
@@ -178,9 +214,6 @@ while (!WindowShouldClose()){
         BeginDrawing();
         switch(windowState){
             case TITLE: {
-
-        // Updating
-        text.Update();
         mball.Update();
         player2.Update(mball.y);
         player3.Update(mball.y);
@@ -199,10 +232,17 @@ while (!WindowShouldClose()){
         DrawRectangle(screen_width / 2, 0, screen_width / 2, screen_height, Green);
         DrawCircle(screen_width / 2, screen_height / 2, 150, Light_Green);
         DrawLine(screen_width / 2, 0, screen_width / 2, screen_height, WHITE);
-        text.Draw();
         mball.Draw();
         player2.Draw();
         player3.Draw();
+        DrawRectangleRec(settingsButton, settingsButtonPressed ? Fade(DARKBLUE, 0.8f) : buttonColor);
+        DrawRectangleRec(playButton, playButtonPressed ? Fade(DARKBLUE, 0.8f) : buttonColor);
+        DrawRectangleRec(editorButton, editorButtonPressed ? Fade(DARKBLUE, 0.8f) : buttonColor);
+
+        // Draw button text
+        DrawText("Settings", settingsButton.x + buttonSize / 2 - MeasureText("Settings", 20) / 2, settingsButton.y + buttonSize / 2 - 10, 20, WHITE);
+        DrawText("Play", playButton.x + buttonSize / 2 - MeasureText("Play", 20) / 2, playButton.y + buttonSize / 2 - 10, 20, WHITE);
+        DrawText("Editor", editorButton.x + buttonSize / 2 - MeasureText("Editor", 20) / 2, editorButton.y + buttonSize / 2 - 10, 20, WHITE);
 
             } break;
             case GAME: {
@@ -210,7 +250,7 @@ while (!WindowShouldClose()){
         DrawRectangle(screen_width / 2, 0, screen_width / 2, screen_height, Green);
         DrawCircle(screen_width / 2, screen_height / 2, 150, Light_Green);
         DrawLine(screen_width / 2, 0, screen_width / 2, screen_height, WHITE);
-        DrawRectangle(340, 300, 250, 350, BLACK);
+        DrawRectangle(340, 300, 250, 350, buttonColor);
         DrawRectangle(740, 300, 250, 350, BLACK);
         DrawText("VS PC", 797, 454, 40, RAYWHITE);
         DrawText("VS Friend", 358, 453, 40, RAYWHITE);
