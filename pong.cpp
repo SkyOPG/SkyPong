@@ -1,46 +1,36 @@
-// including the libraries
-#include <iostream>
-#include <raylib.h>
-#include <ball.h>
+#include <pong.h>
 
-// namespace std for less code
 using namespace std;
-
-const int screen_width = 1280;
-const int screen_height = 800;
-
-// screening system
-typedef enum GameScreen { TITLE, GAMEVSCPU, GAME, GAMEVSPLAYER, PAUSE, SETTINGS, SECRET } GameScreen;
-
-// executable icon
-Image logo = LoadImage("./resources/icon.png");
-
-// keybinds
-
-Color skyblue = Color{ 135, 206, 235, 255 };
-
-KeyboardKey Up, Down, P2Up, P2Down, Quit;
-const int buttonSize = 100;
-const int buttonSpacing = 40;
-const int titleFontSize = 60;
-const float rotationSpeed = 2.0f;
-const int toggleSize = 20;
-int textx = 200, texty = 200, textsize = 40;
-Rectangle settingsButton = { screen_width / 2 - buttonSize / 2, screen_height / 2 + buttonSpacing, buttonSize, buttonSize };
-Rectangle playButton = { screen_width / 2 - buttonSize - buttonSpacing / 2 - 100, screen_height / 2 + buttonSpacing, buttonSize, buttonSize };
-Rectangle editorButton = { screen_width / 2 + buttonSpacing / 2 + 100, screen_height / 2 + buttonSpacing, buttonSize, buttonSize };
+GameScreen pausedFrom = NAN;
+GameScreen windowState = TITLE;
+RPCAt RPC = NO;
+matchMode mode = NONE;
 
 Ball ball;
 MenuBall mball;
 Text text;
-Paddle player;
+APaddle player;
 Player2Paddle p2;
 CpuPaddle cpu;
 CpuPaddle player2;
 CpuPaddle player3;
+matchMode match = NONE;
+Image logo = LoadImage("./resources/icon.png");
+Rectangle settingsButton = { screen_width / 2 - buttonSize / 2, screen_height / 2 + buttonSpacing, buttonSize, buttonSize };
+Rectangle playButton = { screen_width / 2 - buttonSize - buttonSpacing / 2 - 100, screen_height / 2 + buttonSpacing, buttonSize, buttonSize };
+Rectangle editorButton = { screen_width / 2 + buttonSpacing / 2 + 100, screen_height / 2 + buttonSpacing, buttonSize, buttonSize };
+Color skyblue = Color{ 135, 206, 235, 255 };
+Color buttonColor = Fade(skyblue, 0.5f);
+Color Green = Color{38, 185, 154, 255};
+Color Dark_Green = Color{20, 160, 133, 255};
+Color Light_Green = Color{129, 204, 184, 255};
+Color Yellow = Color{243, 213, 91, 255};
+Color Blue = Color{30, 139, 159, 255};
+KeyboardKey Up, Down, P2Up, P2Down, Quit;
 
-int main(void)
-{
+int main(void) {
+    init();
+
     cout << "Starting the game" << endl;
     
     InitWindow(screen_width, screen_height, "SkyPong");
@@ -49,68 +39,17 @@ int main(void)
     SetWindowIcon(logo);
     SetTargetFPS(60);
 
-bool playButtonPressed = false;
-bool settingsButtonPressed = false;
-bool editorButtonPressed = false;
 
-ball.radius = 20;
-ball.x = screen_width/2;
-ball.y = screen_height/2;
-ball.speed_x = 7;
-ball.speed_y = 7;
-
-mball.radius = 20;
-mball.x = screen_width/2;
-mball.y = screen_height/2;
-mball.speed_x = 7;
-mball.speed_y = 7;
-
-text.size = 60;
-text.size2 = 40;
-text.speed_x = 7;
-text.speed_y = 7;
-
-player.width = 25;
-player.height = 120;
-player.x = screen_width-player.width-10;
-player.y = screen_height/2-player.height/2;
-player.speed = 6;
-
-p2.height = 120;
-p2.width = 25;
-p2.x = 10;
-p2.y = screen_height/2-cpu.height/2;
-p2.speed = 6;
-
-player2.width = 25;
-player2.height = 120;
-player2.x = screen_width-player.width-10;
-player2.y = screen_height/2-player.height/2;
-player2.speed = 6;
-
-player3.height = 120;
-player3.width = 25;
-player3.x = 10;
-player3.y = screen_height/2-cpu.height/2;
-player3.speed = 6;
-
-cpu.height = 120;
-cpu.width = 25;
-cpu.x = 10;
-cpu.y = screen_height/2-cpu.height/2;
-cpu.speed = 6;
-
-GameScreen windowState = TITLE;
 
 float rotationAngle = 0.0f;
 
 Vector2 titlePosition = { screen_width / 2 - MeasureText("SkyPong", titleFontSize) / 2, screen_height / 4 };
 
-Sound sound = LoadSound("song.mp3");
+Sound sound = LoadSound("/resources/song.mp3");
 
 PlaySound(sound);
 
-Color buttonColor = Fade(skyblue, 0.5f);
+
 
 bool toggle1 = false;
 bool toggle2 = false;
@@ -129,6 +68,10 @@ while (!WindowShouldClose()){
 
         switch(windowState){
             case TITLE: {
+                if(RPC != HOME){
+                    RPC = HOME;
+                    update("Ponging", "In Main Menu");
+                }
                 if (playButtonPressed)
                     windowState = GAME;
                 else if (settingsButtonPressed)
@@ -140,22 +83,10 @@ while (!WindowShouldClose()){
                 }
                 if(IsKeyPressed(KEY_F2)) {
                     double time = GetTime();
-                    TakeScreenshot(TextFormat("screenshot.png-%d",time));
+                    TakeScreenshot(TextFormat("ss-%i.png",time));
                 }
             } break;
             case GAME: {
-                if(IsKeyDown(KEY_UP)) {
-                    texty += 1;
-                }
-                if(IsKeyDown(KEY_DOWN)) {
-                    texty -= 1;
-                }
-                if(IsKeyDown(KEY_LEFT)) {
-                    textx -= 1;
-                }
-                if(IsKeyDown(KEY_RIGHT)) {
-                    textx += 1;
-                }
                 if(IsMouseButtonPressed(0)) {
             if(341 <= GetMouseX()){
                 if(GetMouseX() <= 585){
@@ -171,39 +102,51 @@ while (!WindowShouldClose()){
                             windowState = GAMEVSCPU;
                             } 
                         } 
-                    } 
+                    }  
                 }
         }
             } break;
             case GAMEVSCPU: {
+                if(RPC != INGAME){
+                    RPC = INGAME;
+                    match = VSCPU;
+                    update("Ponging", "VS Computer");
+                }
                 if(IsKeyPressed(KEY_F11)) {
                     ToggleFullscreen();
                 }
                 if(IsKeyPressed(KEY_F2)) {
-                    int time = GetTime();
-                    TakeScreenshot("screenshot.png" );
+                    double time = GetTime();
+                    TakeScreenshot(TextFormat("ss-%i.png",time));
                 }
                 if (IsKeyPressed(KEY_ESCAPE)) {
                     windowState = PAUSE;
                 }
             } break;
             case PAUSE: {
-                if (IsKeyPressed(KEY_ESCAPE)) {
-                    windowState = GAME;
+                if(RPC != PAUSED){
+                    RPC = PAUSED;
+                    update("Ponging", "Paused");
                 }
-                if(IsKeyPressed(KEY_Q)) {
-                    windowState = TITLE;
+                if (IsKeyPressed(KEY_ESCAPE)) {
+                    windowState = pausedFrom;
                 }
             } break;
             case GAMEVSPLAYER: {
+                if(RPC != INGAME){
+                    RPC = INGAME;
+                    match = VSPLAYER;
+                    update("Ponging", "VS Friend");
+                }
                 if(IsKeyPressed(KEY_F11)) {
                     ToggleFullscreen();
                 }
                 if(IsKeyPressed(KEY_F2)) {
-                    int time = GetTime();
-                    TakeScreenshot("screenshot.png" );
+                    double time = GetTime();
+                    TakeScreenshot(TextFormat("ss-%i.png",time));
                 }
                 if (IsKeyPressed(KEY_ESCAPE)) {
+                    pausedFrom = GAMEVSCPU;
                     windowState = PAUSE;
                 }
             } break;
@@ -242,18 +185,11 @@ while (!WindowShouldClose()){
         // Draw button text
         DrawText("Settings", settingsButton.x + buttonSize / 2 - MeasureText("Settings", 20) / 2, settingsButton.y + buttonSize / 2 - 10, 20, WHITE);
         DrawText("Play", playButton.x + buttonSize / 2 - MeasureText("Play", 20) / 2, playButton.y + buttonSize / 2 - 10, 20, WHITE);
-        DrawText("Editor", editorButton.x + buttonSize / 2 - MeasureText("Editor", 20) / 2, editorButton.y + buttonSize / 2 - 10, 20, WHITE);
+        DrawText("Quit", editorButton.x + buttonSize / 2 - MeasureText("Editor", 20) / 2, editorButton.y + buttonSize / 2 - 10, 20, WHITE);
 
             } break;
             case GAME: {
-        ClearBackground(Dark_Green);
-        DrawRectangle(screen_width / 2, 0, screen_width / 2, screen_height, Green);
-        DrawCircle(screen_width / 2, screen_height / 2, 150, Light_Green);
-        DrawLine(screen_width / 2, 0, screen_width / 2, screen_height, WHITE);
-        DrawRectangle(340, 300, 250, 350, buttonColor);
-        DrawRectangle(740, 300, 250, 350, BLACK);
-        DrawText("VS PC", 797, 454, 40, RAYWHITE);
-        DrawText("VS Friend", 358, 453, 40, RAYWHITE);
+        gamescreen();
             } break;
             case GAMEVSCPU: {
 
@@ -283,13 +219,21 @@ while (!WindowShouldClose()){
         DrawText(TextFormat("%i", player_score), 3 * screen_width / 4 - 20, 20, 80, WHITE);
             } break;
             case PAUSE: {
-        ClearBackground(Dark_Green);
         DrawRectangle(screen_width / 2, 0, screen_width / 2, screen_height, Green);
         DrawCircle(screen_width / 2, screen_height / 2, 150, Light_Green);
         DrawLine(screen_width / 2, 0, screen_width / 2, screen_height, WHITE);
         ball.Draw();
         cpu.Draw();
         player.Draw();
+        DrawText("Paused", screen_width / 2 - MeasureText("Paused", 50) / 2, 20, 50, BLACK);
+        DrawRectangleRec(settingsButton, settingsButtonPressed ? Fade(DARKBLUE, 0.8f) : buttonColor);
+        DrawRectangleRec(playButton, playButtonPressed ? Fade(DARKBLUE, 0.8f) : buttonColor);
+        DrawRectangleRec(editorButton, editorButtonPressed ? Fade(DARKBLUE, 0.8f) : buttonColor);
+
+        // Draw button text
+        DrawText("Settings", settingsButton.x + buttonSize / 2 - MeasureText("Settings", 20) / 2, settingsButton.y + buttonSize / 2 - 10, 20, WHITE);
+        DrawText("Resume", playButton.x + buttonSize / 2 - MeasureText("Resume", 20) / 2, playButton.y + buttonSize / 2 - 10, 20, WHITE);
+        DrawText("Menu", editorButton.x + buttonSize / 2 - MeasureText("Menu", 20) / 2, editorButton.y + buttonSize / 2 - 10, 20, WHITE);
             } break;
             case GAMEVSPLAYER: {
         ball.Update();
@@ -316,14 +260,10 @@ while (!WindowShouldClose()){
         DrawText(TextFormat("%i", cpu_score), screen_width / 4 - 20, 20, 80, WHITE);
         DrawText(TextFormat("%i", player_score), 3 * screen_width / 4 - 20, 20, 80, WHITE);
             } break;
-            default: break;
-        }
-
-        EndDrawing();
-
-        
-        }
-
-    CloseWindow();
-    return 0;
-}
+            case SETTINGS:{
+                // Draw settings elements
+                ClearBackground(BLUE);
+                DrawText("Settings", screen_width / 2 - MeasureText("Settings", 30) / 2, 20, 30, BLACK);
+                DrawRectangle(screen_width / 2 + 20, screen_height / 2 - 90, toggleSize, toggleSize, toggle1 ? BLACK : GRAY);
+                DrawRectangle(screen_width / 2 + 20, screen_height / 2 - 50, toggleSize, toggleSize, toggle2 ? BLACK : GRAY);
+                DrawText(textInput, screen_width / 2 + 25, s

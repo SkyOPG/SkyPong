@@ -1,24 +1,26 @@
 #include <raylib.h>
 #include <iostream>
+#include <aaa.h>
+
+Color skybloo = Color{ 135, 206, 235, 255 };
+Color gren = Color{38, 185, 154, 255};
+Color Dark_gren = Color{20, 160, 133, 255};
+Color Light_gren = Color{129, 204, 184, 255};
+Color yelow = Color{243, 213, 91, 255};
+Color bloo = Color{30, 139, 159, 255};
 
 int cpu_score = 0;
 int player_score = 0;
 
-Color Green = Color{38, 185, 154, 255};
-Color Dark_Green = Color{20, 160, 133, 255};
-Color Light_Green = Color{129, 204, 184, 255};
-Color Yellow = Color{243, 213, 91, 255};
-Color Blue = Color{30, 139, 159, 255};
-
 class Ball {
 public:
-      float x, y;
-    int speed_x, speed_y;
-    int radius;
+      float x = screen_width /2, y = screen_height/2;
+    int speed_x = 7, speed_y = 7;
+    int radius = 20;
 
     void Draw()
     {
-        DrawCircle(x, y, radius, Yellow);
+        DrawCircle(x, y, radius, yelow);
     }
 
     void Update()
@@ -55,13 +57,15 @@ public:
 };
 class MenuBall : public Ball {
 public:
-    float x, y;
-    int speed_x, speed_y;
-    int radius;
+    int radius = 20;
+    float x = screen_width/2;
+    float y = screen_height/2;
+    int speed_x = 7;
+    int speed_y = 7;
 
     void Draw()
     {
-        DrawCircle(x, y, radius, Yellow);
+        DrawCircle(x, y, radius, yelow);
     }
 
     void Update()
@@ -97,13 +101,14 @@ class Text : public Ball
 {
 public:
     float x = 460;
-      float y = 340;
-    int speed_x, speed_y;
-    int size;
-    int size2;
+    float y = 340;
+    int size = 60;
+    int size2 = 40;
+    int speed_x = 7;
+    int speed_y = 7;
 
     void Draw() {
-        DrawText("SkyPong", x, y, size, Blue);
+        DrawText("SkyPong", x, y, size, bloo);
         DrawText("Play - Space", x + 100, y + 100, size2, LIGHTGRAY);
         DrawText("Settings - S", x, y + 200, size2, LIGHTGRAY);
         DrawText("Quit - Q", x + 100, y + 300, size2, LIGHTGRAY);
@@ -128,30 +133,46 @@ public:
 class Paddle {
 
 protected:
-    void LimitMovement()
+    float width = 25;
+    float height = 120;
+    float x = screen_width-width-10;
+    float y = screen_height/2-height/2;
+    int speed = 6;
+    float LimitMovement(float ye,float heights)
     {
-        if (y <= 0)
+        if (ye <= 0)
         {
-            y = 0;
+            ye = 0;
         }
-        if (y + height >= GetScreenHeight())
+        if (ye + heights >= GetScreenHeight())
         {
-            y = GetScreenHeight() - height;
+            ye = GetScreenHeight() - heights;
         }
+        return ye;
     }
 
 public:
-    float x, y;
-    float width, height;
-    int speed;
-
     void Draw()
     {
-        DrawRectangleRounded(Rectangle{x, y, width, height}, 0.8, 0, WHITE);
+        
     }
 
     void Update()
     {
+    }
+};
+
+class APaddle : public Paddle  {
+public:
+    float width = 25;
+    float height = 120;
+    float x = screen_width-width-10;
+    float y = screen_height/2-height/2;
+    int speed = 6;
+    void Draw() {
+        DrawRectangleRounded(Rectangle{x, y, width, height}, 0.8, 0, WHITE);
+    }
+    void Update() {
         if (IsKeyDown(KEY_UP))
         {
             y = y - speed;
@@ -160,15 +181,22 @@ public:
         {
             y = y + speed;
         }
-        LimitMovement();
+        y = LimitMovement(y, height);
     }
 };
 
 class CpuPaddle : public Paddle
 {
 public:
-    void Update(int ball_y)
-    {
+    float width = 25;
+    float height = 120;
+    float x = width-10;
+    float y = screen_height/2-height/2;
+    int speed = 6;
+    void Draw() {
+        DrawRectangleRounded(Rectangle{x, y, width, height}, 0.8, 0, WHITE);
+    }
+    void Update(int ball_y) {
         if (y + height / 2 > ball_y)
         {
             y = y - speed;
@@ -177,15 +205,24 @@ public:
         {
             y = y + speed;
         }
-        LimitMovement();
+        y = LimitMovement(y, height);
     }
 };
 
 class MenuPaddle : public Paddle
 {
 public:
+float width = 25;
+        float height = 120;
+        float x = screen_width-width-10;
+        float y = screen_height/2-height/2;
+        int speed = 6;
+void Draw() {
+        DrawRectangleRounded(Rectangle{x, y, width, height}, 0.8, 0, WHITE);
+    }
     void Update(int ball_y)
     {
+        
         if (y + height / 2 > ball_y)
         {
             y = y - speed;
@@ -194,12 +231,20 @@ public:
         {
             y = y + speed;
         }
-        LimitMovement();
+        y = LimitMovement(y, height);
     }
 };
 class secondMenuPaddle : public Paddle
 {
 public:
+    float width = 25;
+        float height = 120;
+        float x = width-10;
+        float y = screen_height/2-height/2;
+        int speed = 6;
+        void Draw() {
+        DrawRectangleRounded(Rectangle{x, y, width, height}, 0.8, 0, WHITE);
+    }
     void Update(int ball_y)
     {
         if (y + height / 2 > ball_y)
@@ -210,11 +255,19 @@ public:
         {
             y = y + speed;
         }
-        LimitMovement();
+        y = LimitMovement(y, height);
     }
 };
 class Player2Paddle : public Paddle {
     public: 
+    float width = 25;
+    float height = 120;
+    float x = width-10;
+    float y = screen_height/2-height/2;
+    int speed = 6;
+    void Draw() {
+        DrawRectangleRounded(Rectangle{x, y, width, height}, 0.8, 0, WHITE);
+    }
     void Update()
     {
         if (IsKeyDown(KEY_W))
@@ -225,6 +278,6 @@ class Player2Paddle : public Paddle {
         {
             y = y + speed;
         }
-        LimitMovement();
+        y = LimitMovement(y, height);
     }
 };

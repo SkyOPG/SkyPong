@@ -3,12 +3,9 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/classes",
-                "C:/mingw_dev_lib/raylib/**",
-                "C:/mingw_dev_lib/discord/include/**",
-                "C:/mingw_dev_lib/discord/lib/**",
-                "C:/mingw_dev_lib/discord/bin/**",
-                "${workspaceFolder}"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/classes"
             ],
             "defines": [
                 "_DEBUG",
