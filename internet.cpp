@@ -15,6 +15,8 @@ int main(){
     if(init != 0) {
         fprintf(stderr, "YOUR MOM DIED\n");
         return EXIT_FAILURE;
+    } else {
+        std::cout << "welcome";
     }
     atexit(enet_deinitialize);
     ENetHost* client;
@@ -42,10 +44,8 @@ int main(){
         puts("Connection to 127.0.0.1:6969 not fucking Successful");
         return EXIT_SUCCESS;
     }
-    char* name = "johnny sins";
-    char code[80] = "8|";
-    strcat(code, name);
-    SendPacket(peer, code);
+    char* name = "frdegdfhhfdhjfhfgjfdyhgjhfggh";
+    SendPacket(peer, name);
 
     while(enet_host_service(client, &event, 1000) > 0) {
         switch(event.type) {

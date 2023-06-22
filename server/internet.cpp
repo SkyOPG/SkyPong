@@ -55,7 +55,6 @@ int main(int argc, char** argv) {
                 event.peer -> address.host,
                 event.peer -> address.port,
                 event.channelID);
-                ParseData(server, -1, event.packet->data);
                 } break;
                 case ENET_EVENT_TYPE_DISCONNECT: {
                     printf("THE BITCH FROM %s:%u LEFT YOUR HOUSE IMAGINE", event.peer -> address.host, event.peer -> address.port);

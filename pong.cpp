@@ -372,8 +372,6 @@ while (!WindowShouldClose()){
         gamescreen();
             } break;
             case GAMEVSCPU: {
-
-        // Updating
         vscpu();
             } break;
             case PAUSE: {
