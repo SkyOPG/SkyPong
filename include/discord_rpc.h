@@ -11,7 +11,6 @@
 #      define DISCORD_EXPORT __declspec(dllimport)
 #    endif
 #  else
-#    define DISCORD_EXPORT __attribute__((visibility("default")))
 #  endif
 #else
 #  define DISCORD_EXPORT

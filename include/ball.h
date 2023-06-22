@@ -2,16 +2,6 @@
 #include <iostream>
 #include <aaa.h>
 
-Color skybloo = Color{ 135, 206, 235, 255 };
-Color gren = Color{38, 185, 154, 255};
-Color Dark_gren = Color{20, 160, 133, 255};
-Color Light_gren = Color{129, 204, 184, 255};
-Color yelow = Color{243, 213, 91, 255};
-Color bloo = Color{30, 139, 159, 255};
-
-int cpu_score = 0;
-int player_score = 0;
-
 class Ball
 {
 public:

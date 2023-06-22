@@ -1,2 +1,4 @@
-cpu_usage = 1
-gamecode = 42
+boom
+loom
+room
+soom
