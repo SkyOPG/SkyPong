@@ -3,6 +3,10 @@
 these Enumerators are a type definition for game screens (called scenes in game engines), Discord RPC text and the type of match respectively
 they are used to define the location of the user
 */
+const float buttonSize = 200, buttonSpacing = 40, titleFontSize = 60, rotationSpeed = 2.0f;
+float toggleSize = 20;
+const float screen_width = 1280;
+const float screen_height = 800;
 typedef enum GameScreen { TITLE, GAMEVSCPU, GAME, GAMEVSPLAYER, PAUSE, SETTINGS, SECRET, NAN } GameScreen;
 typedef enum RPCAt { HOME, PAUSED, INGAME, EDITORS, SETTING, NO } RPCAt;
 typedef enum matchMode { VSCPU, VSPLAYER, VSPLAYERONLINE, NONE } matchMode;
@@ -12,10 +16,7 @@ Namespaces are the way of making your code shorter for example: "std::cout" beco
 */
 using namespace std;
 
-const float buttonSize = 200, buttonSpacing = 40, titleFontSize = 60, rotationSpeed = 2.0f;
-float toggleSize = 20; // info
-const float screen_width = 1280; // width of the window
-const float screen_height = 800; // height of the window
+
 /*
 Definitions for enums
 */
@@ -70,37 +71,6 @@ void gamescreen() {
         DrawText("VS PC", 797, 454, 40, RAYWHITE);
         DrawText("VS Friend", 358, 453, 40, RAYWHITE);
 }
-void settings() {
-            
-}
-void vsplayer() {
-    ball.Update();
-        player.Update();
-        p2.Update();
-
-        if (CheckCollisionCircleRec(Vector2{ball.x, ball.y}, ball.radius, Rectangle{player.x, player.y, player.width, player.height}))
-        {
-            ball.speed_x *= -1;
-        }
-
-        if (CheckCollisionCircleRec(Vector2{ball.x, ball.y}, ball.radius, Rectangle{p2.x, p2.y, p2.width, p2.height}))
-        {
-            ball.speed_x *= -1;
-        }
-
-        ClearBackground(Dark_Green);
-        DrawRectangle(screen_width / 2, 0, screen_width / 2, screen_height, Green);
-        DrawCircle(screen_width / 2, screen_height / 2, 150, Light_Green);
-        DrawLine(screen_width / 2, 0, screen_width / 2, screen_height, WHITE);
-        ball.Draw();
-        player.Draw();
-        p2.Draw();
-        DrawText(TextFormat("%i", cpu_score), screen_width / 4 - 20, 20, 80, WHITE);
-        DrawText(TextFormat("%i", player_score), 3 * screen_width / 4 - 20, 20, 80, WHITE);
-}
-void pause() {
-    
-}
 void vscpu() {
     ball.Update();
         player.Update();
@@ -126,51 +96,44 @@ void vscpu() {
         DrawText(TextFormat("%i", cpu_score), screen_width / 4 - 20, 20, 80, WHITE);
         DrawText(TextFormat("%i", player_score), 3 * screen_width / 4 - 20, 20, 80, WHITE);
 }
+void vsplayer() {
+    ball.Update();
+        player.Update();
+        p2.Update();
+
+        if (CheckCollisionCircleRec(Vector2{ball.x, ball.y}, ball.radius, Rectangle{player.x, player.y, player.width, player.height}))
+        {
+            ball.speed_x *= -1;
+        }
+
+        if (CheckCollisionCircleRec(Vector2{ball.x, ball.y}, ball.radius, Rectangle{p2.x, p2.y, p2.width, p2.height}))
+        {
+            ball.speed_x *= -1;
+        }
+
+        ClearBackground(Dark_Green);
+        DrawRectangle(screen_width / 2, 0, screen_width / 2, screen_height, Green);
+        DrawCircle(screen_width / 2, screen_height / 2, 150, Light_Green);
+        DrawLine(screen_width / 2, 0, screen_width / 2, screen_height, WHITE);
+        ball.Draw();
+        p2.Draw();
+        player.Draw();
+        DrawText(TextFormat("%i", cpu_score), screen_width / 4 - 20, 20, 80, WHITE);
+        DrawText(TextFormat("%i", player_score), 3 * screen_width / 4 - 20, 20, 80, WHITE);
+}
 
 
 int main(void) {
-        Image logo = LoadImage("./resources/icon.png");
+    Shader shade = LoadShader("./resources/shader.vs", "./resources/shader.fs")
+    string check = ReadLineFromFile('./data/options.txt', 1);
+    Image logo = LoadImage("./resources/icon.png");
     init();
     InitWindow(screen_width, screen_height, "SkyPong");
     SetTargetFPS(60);
     InitAudioDevice();
     SetExitKey(KEY_NULL);
     SetWindowIcon(logo);
-ball.radius = 20;
-ball.x = screen_width / 2;
-ball.y = screen_height / 2;
-ball.speed_x = 7;
-ball.speed_y = 7;
-mball.radius = 20;
-mball.x = screen_width / 2;
-mball.y = screen_height / 2;
-mball.speed_x = 7;
-mball.speed_y = 7;
-player.width = 25;
-player.height = 120;
-player.x = screen_width - player.width - 10;
-player.y = screen_height / 2 - player.height / 2;
-player.speed = 6;
-p2.width = 25;
-p2.height = 120;
-p2.x = 10;
-p2.y = screen_height / 2 - p2.height / 2;
-p2.speed = 6;
-player2.width = 25;
-player2.height = 120;
-player2.x = screen_width - player2.width - 10;
-player2.y = screen_height / 2 - player2.height / 2;
-player2.speed = 6;
-player3.height = 120;
-player3.width = 25;
-player3.x = 10;
-player3.y = screen_height / 2 - player3.height / 2;
-player3.speed = 6;
-cpu.height = 120;
-cpu.width = 25;
-cpu.x = 10;
-cpu.y = screen_height / 2 - cpu.height / 2;
-cpu.speed = 6;
+ball.radius = 20;ball.x = screen_width / 2;ball.y = screen_height / 2;ball.speed_x = 7;ball.speed_y = 7;mball.radius = 20;mball.x = screen_width / 2;mball.y = screen_height / 2;mball.speed_x = 7;mball.speed_y = 7;player.width = 25;player.height = 120;player.x = screen_width - player.width - 10;player.y = screen_height / 2 - player.height / 2;player.speed = 6;p2.width = 25;p2.height = 120;p2.x = 10;p2.y = screen_height / 2 - p2.height / 2;p2.speed = 6;player2.width = 25;player2.height = 120;player2.x = screen_width - player2.width - 10;player2.y = screen_height / 2 - player2.height / 2;player2.speed = 6;player3.height = 120;player3.width = 25;player3.x = 10;player3.y = screen_height / 2 - player3.height / 2;player3.speed = 6;cpu.height = 120;cpu.width = 25;cpu.x = 10;cpu.y = screen_height / 2 - cpu.height / 2;cpu.speed = 6;
 
 float rotationAngle = 0.0f;
 
@@ -191,7 +154,6 @@ while (!WindowShouldClose()){
         }
         switch(windowState){
             case TITLE: {
-                
                 if(RPC != HOME){
                     RPC = HOME;
                     update("Ponging", "In Main Menu");
