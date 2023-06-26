@@ -15,6 +15,7 @@ Color Dark_Green = Color{20, 160, 133, 255}; // dark green (again)
 Color Light_Green = Color{129, 204, 184, 255}; // light green (again)
 Color Yellow = Color{243, 213, 91, 255}; // yellow (again)
 Color Blue = Color{30, 139, 159, 255}; // blue (again)
+Color otherBlue = Color{30, 139, 159, 1};
 KeyboardKey Up, Down, P2Up, P2Down, Quit; // keybinds
 extern int cpu_score;
 extern int player_score;

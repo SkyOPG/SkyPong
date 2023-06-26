@@ -67,10 +67,11 @@ public:
     float x, y;
     float width, height;
     int speed;
+    Color color;
 
     void Draw()
     {
-        DrawRectangleRounded(Rectangle{x, y, width, height}, 0.8, 0, WHITE);
+        DrawRectangleRounded(Rectangle{x, y, width, height}, 0.8, 0, color);
     }
 
     void Update()

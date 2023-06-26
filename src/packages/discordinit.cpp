@@ -39,7 +39,7 @@ void update(const char* state, const char* key) {
     presence.startTimestamp = time(0);
     Discord_UpdatePresence(&presence);
 }
-void update_match(const char* matchsecret, const char* key, const char* state, const char* partyId, const char* joinsecret) {
+void update_match(const char* matchsecret, const char* key, const char* state) {
     presence.state = state;
     presence.details = key;
     presence.largeImageKey = "pong";
