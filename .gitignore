@@ -1,5 +1,4 @@
-Pong/
-resources/
-lib/
-include/
-classes/
+resources
+lib
+include
+Pong
