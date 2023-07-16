@@ -1,4 +1,4 @@
-resources
-lib
-include
-Pong
+includes
+libs
+resource
+out
