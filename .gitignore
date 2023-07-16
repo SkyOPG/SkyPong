@@ -2,3 +2,5 @@ includes
 libs
 resource
 out
+class
+shaders
