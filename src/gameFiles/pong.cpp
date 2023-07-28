@@ -3,30 +3,39 @@
 #define GLSL_VERSION            330
 
 /*
-these Enumerators are a type definition for game screens (called scenes in game engines), Discord RPC text and the type of match respectively
-they are used to define the location of the user
-*/
-const float buttonSize = 200, buttonSpacing = 40, titleFontSize = 60, rotationSpeed = 2.0f;
-float toggleSize = 57;
-Color btclr1, btclr2;
-const float screen_width = 1280;
-const float screen_height = 800;
-typedef enum GameScreen { TITLE, GAMEVSCPU, GAME, GAMEVSPLAYER, PAUSE, SETTINGS, SECRET, NAN } GameScreen;
-typedef enum RPCAt { HOME, PAUSED, INGAME, EDITORS, SETTING, NO } RPCAt;
-typedef enum matchMode { VSCPU, VSPLAYER, VSPLAYERONLINE, NONE } matchMode;
-typedef enum Theme { NORMAL, RETRO, PARTY } Theme;
-Theme gameTheme = NORMAL;
-Theme song = NORMAL;
-int cpu_score = 0, player_score = 0;
-Color purple = Color{90, 34, 139, 1};
-Color lpurple = Color{102, 51, 153, 255};
-Color wite = Color{255,255,255,255};
-Color blak = Color{0,0,0,0};
-/*
 Namespaces are the way of making your code shorter for example: "std::cout" becomes "cout"
 */
 using namespace std;
 
+// setup variables
+const float screen_width = 1280;
+const float screen_height = 800;
+
+/*
+these Enumerators are a type definition for game screens (called scenes in game engines), Discord RPC text and the type of match respectively
+they are used to define the location of the user
+*/
+typedef enum GameScreen { TITLE, GAMEVSCPU, GAME, GAMEVSPLAYER, PAUSE, SETTINGS, SECRET, TIMED, NAN } GameScreen;
+typedef enum RPCAt { HOME, PAUSED, INGAME, EDITORS, SETTING, TIME, NO } RPCAt;
+typedef enum matchMode { VSCPU, VSPLAYER, VSPLAYERONLINE, NONE } matchMode;
+typedef enum Theme { NORMAL, RETRO, PARTY } Theme;
+// stuff
+const float buttonSize = 200, buttonSpacing = 40, titleFontSize = 60, rotationSpeed = 2.0f;
+float toggleSize = 57;
+Theme gameTheme = NORMAL;
+Theme song = NORMAL;
+char* Themetext;
+Color btclr1, btclr2;
+Color purple = Color{90, 34, 139, 1};
+Color lpurple = Color{102, 51, 153, 255};
+Color wite = Color{255,255,255,255};
+Color blak = Color{0,0,0,0};
+Color G = Color{38, 185, 154, 255};
+Color DG = Color{20, 160, 133, 255};
+Color LG = Color{129, 204, 184, 255};
+Color Y = Color{243, 213, 91, 255};
+Color buttonColor = Color{30, 139, 159, 255};
+Color otherBlue = Color{30, 139, 159, 0};
 Color pc = wite;
 /*
 Definitions for enums
@@ -75,12 +84,14 @@ char textInput[256] = ""; // text
 Custom Classes By me
 */ 
 Ball ball; // the ball
+PowerBall timeBall; // timed ball
 MenuBall mball; // menu ball
 Paddle player; // main player
 Player2Paddle p2; // second player
 CpuPaddle player2; // bot1
 CpuPaddle player3; // bot2
 CpuPaddle cpu; // bot3
+
 void DrawTable(Theme theme) {
     switch(theme){
         case NORMAL: {
@@ -91,7 +102,6 @@ void DrawTable(Theme theme) {
              pc = wite;
              btclr1 = buttonColor;
              btclr2 = otherBlue;
-             song = NORMAL;
         } break;
         case RETRO: {
              ClearBackground(BLACK);
@@ -101,7 +111,6 @@ void DrawTable(Theme theme) {
              pc = wite;
              btclr1 = Fade(LIGHTGRAY, 0.5f);
              btclr2 = Fade(GRAY, 0.5f);
-             song = RETRO;
         } break;
         case PARTY: {
              ClearBackground(purple);
@@ -111,17 +120,31 @@ void DrawTable(Theme theme) {
              pc = blak;
              btclr1 = Fade(lpurple, 0.5f);
              btclr2 = Fade(purple, 0.5f);
-             song = PARTY;
         } break;
     }
 }
 
-void gamescreen() {
+void timedvscpu() {
+    timeBall.Update();
+        player.Update();
+        cpu.Update(timeBall.y);
+
+        if (CheckCollisionCircleRec(Vector2{timeBall.x, timeBall.y}, timeBall.radius, Rectangle{player.x, player.y, player.width, player.height}))
+        {
+            timeBall.speed_x *= -1;
+        }
+
+        if (CheckCollisionCircleRec(Vector2{timeBall.x, timeBall.y}, timeBall.radius, Rectangle{cpu.x, cpu.y, cpu.width, cpu.height}))
+        {
+            timeBall.speed_x *= -1;
+        }
+
         DrawTable(gameTheme);
-        DrawRectangleRec(rec1, rec1Pressed ? btclr2 : btclr1);
-        DrawRectangleRec(rec2, rec2Pressed ? btclr2 : btclr1);
-        DrawText("VS PC", 797, 454, 40, RAYWHITE);
-        DrawText("VS Friend", 358, 453, 40, RAYWHITE);
+        timeBall.Draw();
+        cpu.Draw();
+        player.Draw();
+        DrawText(TextFormat("%i", cpu_score), screen_width / 4 - 20, 20, 80, WHITE);
+        DrawText(TextFormat("%i", player_score), 3 * screen_width / 4 - 20, 20, 80, WHITE);
 }
 void vscpu() {
     ball.Update();
@@ -167,10 +190,15 @@ void vsplayer() {
         DrawText(TextFormat("%i", cpu_score), screen_width / 4 - 20, 20, 80, WHITE);
         DrawText(TextFormat("%i", player_score), 3 * screen_width / 4 - 20, 20, 80, WHITE);
 }
-
+void gamescreen() {
+        DrawTable(gameTheme);
+        DrawRectangleRec(rec1, rec1Pressed ? btclr2 : btclr1);
+        DrawRectangleRec(rec2, rec2Pressed ? btclr2 : btclr1);
+        DrawText("VS PC", 797, 454, 40, RAYWHITE);
+        DrawText("VS Friend", 358, 453, 40, RAYWHITE);
+}
 
 int main(void) {
-    string check = ReadLineFromFile("./data/options.txt", 1);
     Image logo = LoadImage("./resources/icon.png");
     init();
     InitWindow(screen_width, screen_height, "SkyPong");
@@ -179,15 +207,57 @@ int main(void) {
     Sound sretro = LoadSound("./resources/retro.mp3");
     SetExitKey(KEY_NULL);
     SetWindowIcon(logo);
-player.color = pc;p2.color = pc;cpu.color = pc;ball.radius = 20;ball.x = screen_width / 2;ball.y = screen_height / 2;ball.speed_x = 7;ball.speed_y = 7;mball.radius = 20;mball.x = screen_width / 2;mball.y = screen_height / 2;mball.speed_x = 7;mball.speed_y = 7;player.width = 25;player.height = 120;player.x = screen_width - player.width - 10;player.y = screen_height / 2 - player.height / 2;player.speed = 6;p2.width = 25;p2.height = 120;p2.x = 10;p2.y = screen_height / 2 - p2.height / 2;p2.speed = 6;player2.width = 25;player2.height = 120;player2.x = screen_width - player2.width - 10;player2.y = screen_height / 2 - player2.height / 2;player2.speed = 6;player3.height = 120;player3.width = 25;player3.x = 10;player3.y = screen_height / 2 - player3.height / 2;player3.speed = 6;cpu.height = 120;cpu.width = 25;cpu.x = 10;cpu.y = screen_height / 2 - cpu.height / 2;cpu.speed = 6;
+
+ball.radius = 20;
+ball.x = screen_width / 2;
+ball.y = screen_height / 2;
+ball.speed_x = 7;
+ball.speed_y = 7;
+
+timeBall.radius = 20;
+timeBall.x = screen_width / 2;
+timeBall.y = screen_height / 2;
+timeBall.speed_x = 7;
+timeBall.speed_y = 7;
+
+mball.radius = 20;
+mball.x = screen_width / 2;
+mball.y = screen_height / 2;
+mball.speed_x = 7;
+mball.speed_y = 7;
+
+player.width = 25;
+player.height = 120;
+player.x = screen_width - player.width - 10;
+player.y = screen_height / 2 - player.height / 2;
+player.speed = 6;
+
+p2.width = 25;
+p2.height = 120;
+p2.x = 10;
+p2.y = screen_height / 2 - p2.height / 2;
+p2.speed = 6;
+
+player2.width = 25;
+player2.height = 120;
+player2.x = screen_width - player2.width - 10;
+player2.y = screen_height / 2 - player2.height / 2;
+player2.speed = 6;player3.height = 120;
+
+player3.width = 25;player3.x = 10;
+player3.y = screen_height / 2 - player3.height / 2;
+player3.speed = 6;cpu.height = 120;
+
+cpu.width = 25;cpu.x = 10;
+cpu.y = screen_height / 2 - cpu.height / 2;
+cpu.speed = 6;
 
 float rotationAngle = 0.0f;
 float voice = 0.5;
 Vector2 titlePosition = { screen_width / 2 - MeasureText("SkyPong", titleFontSize) / 2, screen_height / 4 };
 
-int x1 = 200, y1 = 200, x2 = 200, y2 = 200, y3 = 200, x3 = 200, x4 = 200, y4 = 200, x5 = 200, y5 = 200, drawntext = 20;
 bool initted = true;
-while (!WindowShouldClose()){
+while (!WindowShouldClose() && initted){
     string Themetext;
      mousePosition = GetMousePosition();
      playButtonPressed = CheckCollisionPointRec(mousePosition, playButton) && IsMouseButtonReleased(MOUSE_LEFT_BUTTON);
@@ -227,13 +297,14 @@ while (!WindowShouldClose()){
                 } break;
             }
         }
+        
         switch(windowState){
 
             case TITLE: {
                 if(RPC != HOME){
                     RPC = HOME;
-                   // update("Ponging", "In Main Menu");
-                   update_match("SkyOPG.me/SkyPong/match/211", "Online", "Waiting...");
+                   update("Ponging", "In Main Menu");
+                   // update_match("SkyOPG.ms/SkyPong/match/211", "Online", "Waiting...");
                 }
                 if (playButtonPressed)
                     windowState = GAME;
@@ -241,8 +312,6 @@ while (!WindowShouldClose()){
                     windowState = SETTINGS;
                 else if (editorButtonPressed){
                     initted = false;
-                    end();
-                    CloseWindow();
                     }
                 if(IsKeyPressed(KEY_F11)) 
                     ToggleFullscreen();
@@ -250,6 +319,8 @@ while (!WindowShouldClose()){
                     double time = GetTime();
                     TakeScreenshot(TextFormat("ss-%i.png",time));
                 }
+                if(IsKeyPressed(KEY_T)) 
+                    windowState = TIMED;
             } break;
             case GAME: {
                 if(IsMouseButtonPressed(0)) {
@@ -357,6 +428,12 @@ while (!WindowShouldClose()){
                 } break;
             }
                 }
+            } break;
+            case TIMED: {
+                if (IsKeyPressed(KEY_ESCAPE)) {
+                    pausedFrom = TIMED;
+                    windowState = PAUSE;
+                }
             }
             default: break;
         }
@@ -421,6 +498,9 @@ while (!WindowShouldClose()){
             case GAMEVSPLAYER: {
         vsplayer();
             } break;
+            case TIMED: {
+                timedvscpu();
+            } break;
             case SETTINGS:{
                 toggleSize = 57;
                 int safe = voice * 100;
@@ -442,9 +522,8 @@ while (!WindowShouldClose()){
         
         EndDrawing();
 }
-while(initted){
     end();
     CloseWindow();
-}
+
         return 0;
 }
